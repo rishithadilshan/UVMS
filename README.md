@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # University Venue Management System (UVMS)
 
 > **v3.0 enhancement:** flexible date/time booking, registration approval, student approval workflow, venue-change requests, priorities, maintenance, reminders, calendar, reports, waitlist and light/dark themes were added. See [`docs/UVMS_ENHANCEMENT_GUIDE.md`](docs/UVMS_ENHANCEMENT_GUIDE.md) for the migration steps (`npm run migrate` applies `002_uvms_enhancements.sql`), API reference, workflows and **testing status**. Where the text below describes student-only public registration or fixed time slots, the guide supersedes it.
@@ -180,3 +181,7 @@ The frontend's current API paths are retained for auth, users, venues, time slot
 ## Validation status
 
 This archive has been statically inspected and JavaScript syntax checks have been run. A full dependency installation, frontend production build, live PostgreSQL migration, end-to-end API tests and cloud deployment were **not** completed in this environment. Treat those as required next steps rather than assuming the application is production-certified.
+=======
+# UVMS
+University venue management system
+>>>>>>> 64945b39f337f5675c3d9a211f17c8535e9e053a
