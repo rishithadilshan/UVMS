@@ -1,0 +1,9 @@
+{
+  "name": "uvms-booking-concurrency-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node concurrent-booking-test.mjs 10"
+  }
+}

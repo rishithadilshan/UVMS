@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in root .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in root .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in root .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks: [uvms]
+  migrate:
+    build: ./backend
+    command: ["node", "scripts/migrate.js"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      DATABASE_SSL: "false"
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [uvms]
+    restart: "no"
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5050
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      DATABASE_SSL: "false"
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in root .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-30m}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:8080}
+      ALLOWED_REGISTRATION_DOMAINS: ${ALLOWED_REGISTRATION_DOMAINS:?Set ALLOWED_REGISTRATION_DOMAINS in root .env}
+      TRUST_PROXY: "1"
+      DB_POOL_MAX: ${DB_POOL_MAX:-10}
+      SLOW_REQUEST_MS: ${SLOW_REQUEST_MS:-500}
+      SLOW_QUERY_MS: ${SLOW_QUERY_MS:-250}
+      GENERAL_RATE_LIMIT: ${GENERAL_RATE_LIMIT:-100}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-UVMS <no-reply@localhost>}
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    networks: [uvms]
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports: ["${APP_PORT:-8080}:80"]
+    depends_on: [backend]
+    networks: [uvms]
+volumes:
+  postgres-data:
+networks:
+  uvms:

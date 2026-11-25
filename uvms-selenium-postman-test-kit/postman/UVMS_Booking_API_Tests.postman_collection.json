@@ -1,0 +1,163 @@
+{
+  "info": {
+    "_postman_id": "uvms-booking-api-qa-kit",
+    "name": "UVMS Booking API - QA Tests",
+    "description": "Map route, body fields and expected statuses to the actual UVMS backend before running. Use a dedicated QA database only.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Create booking (valid)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{bookingCreatePath}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "{{bookingCreatePath}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"venue_id\": \"{{venueId}}\",\n  \"date\": \"{{bookingDate}}\",\n  \"start_time\": \"{{startTime}}\",\n  \"end_time\": \"{{endTime}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Response is not a server error', function () { pm.expect(pm.response.code).to.be.below(500); });",
+              "pm.test('Response time is recorded', function () { pm.expect(pm.response.responseTime).to.be.a('number'); });",
+              "if ([200, 201].includes(pm.response.code)) {",
+              "  let body = {}; try { body = pm.response.json(); } catch (e) {}",
+              "  if (body.id || body.booking_id) pm.environment.set('createdBookingId', body.id || body.booking_id);",
+              "}",
+              "// Replace the broad assertion with the exact success code and response schema used by UVMS."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Create same booking again (conflict)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{bookingCreatePath}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "{{bookingCreatePath}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"venue_id\": \"{{venueId}}\",\n  \"date\": \"{{bookingDate}}\",\n  \"start_time\": \"{{startTime}}\",\n  \"end_time\": \"{{endTime}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Conflicting booking is rejected', function () { pm.expect([400, 409, 422]).to.include(pm.response.code); });",
+              "// Independently query DB/timetable after this request; an error response alone does not prove integrity."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Unauthenticated create is denied",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{bookingCreatePath}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "{{bookingCreatePath}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"venue_id\": \"{{venueId}}\",\n  \"date\": \"{{bookingDate}}\",\n  \"start_time\": \"{{startTime}}\",\n  \"end_time\": \"{{endTime}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Unauthenticated request is denied', function () { pm.expect([401, 403]).to.include(pm.response.code); });"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "bookingCreatePath",
+      "value": "/REPLACE_WITH_REAL_ROUTE"
+    },
+    {
+      "key": "authToken",
+      "value": "REPLACE_WITH_QA_TOKEN"
+    },
+    {
+      "key": "venueId",
+      "value": "REPLACE_WITH_QA_VENUE_ID"
+    },
+    {
+      "key": "bookingDate",
+      "value": "2026-12-01"
+    },
+    {
+      "key": "startTime",
+      "value": "09:00"
+    },
+    {
+      "key": "endTime",
+      "value": "10:00"
+    }
+  ]
+}

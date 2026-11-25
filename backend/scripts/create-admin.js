@@ -1,0 +1,4 @@
+require('dotenv').config();
+const bcrypt=require('bcryptjs');
+const pool=require('../db/pool');
+(async()=>{try{const {ADMIN_NAME,ADMIN_EMAIL,ADMIN_PASSWORD}=process.env;if(!ADMIN_NAME||!ADMIN_EMAIL||!/^\S+@\S+\.\S+$/.test(ADMIN_EMAIL)||!ADMIN_PASSWORD||ADMIN_PASSWORD.length<12||Buffer.byteLength(ADMIN_PASSWORD,'utf8')>72)throw new Error('Set ADMIN_NAME, ADMIN_EMAIL and ADMIN_PASSWORD (minimum 12 characters) in the environment.');const hash=await bcrypt.hash(ADMIN_PASSWORD,12);const r=await pool.query("INSERT INTO users(name,email,password_hash,role,approved) VALUES($1,$2,$3,'ADMIN',true) RETURNING id,email,role",[ADMIN_NAME,ADMIN_EMAIL.toLowerCase(),hash]);console.log('Administrator created:',r.rows[0].email);}catch(e){console.error('Admin creation failed:',e.message);process.exitCode=1;}finally{await pool.end();}})();

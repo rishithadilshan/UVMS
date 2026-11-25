@@ -1,0 +1,21 @@
+{
+  "name": "uvms-playwright-qa",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:auth": "playwright test tests/auth.spec.js tests/roles.spec.js",
+    "test:bookings": "playwright test tests/bookings.spec.js",
+    "report": "playwright show-report",
+    "install:browsers": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "dotenv": "^16.4.7"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}
